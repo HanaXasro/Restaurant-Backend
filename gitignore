@@ -1,0 +1,21 @@
+# Build folders
+bin/
+obj/
+
+# Hidden folders
+.folder/
+
+# Environment files
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Logs
+*.log
