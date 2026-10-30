@@ -1,21 +1,21 @@
-# Build folders
-bin/
-obj/
+# Build folders (all locations)
+**/bin/
+**/obj/
 
-# Hidden folders
-.folder/
+# Hidden folders (all locations)
+**/.folder/
 
-# Environment files
-.env
-.env.*
+# Environment files (all locations)
+**/.env
+**/.env.*
 
-# Dependencies
-node_modules/
+# Dependencies (all locations)
+**/node_modules/
 
-# IDE
-.vs/
-.idea/
-.vscode/
+# IDE (all locations)
+**/.vs/
+**/.idea/
+**/.vscode/
 
-# Logs
-*.log
+# Logs (all locations)
+**/*.log
