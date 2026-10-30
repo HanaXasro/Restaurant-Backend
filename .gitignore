@@ -19,3 +19,9 @@
 
 # Logs (all locations)
 **/*.log
+
+[Bb]in/
+[Oo]bj/
+.vs/
+.idea/
+*.DotSettings.user
