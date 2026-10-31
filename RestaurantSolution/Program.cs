@@ -8,8 +8,6 @@ using RestaurantSolution.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -32,24 +30,16 @@ builder.Services.AddDbContext<DataDbContext>(options =>
     )
 );
 
-// Controllers
 builder.Services.AddControllers();
-
 
 var app = builder.Build();
 
-
-// ✅ FIX 5: Swagger available in all environments (remove if you want dev-only)
-// if (app.Environment.IsDevelopment())
-// {
 app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "Restaurant Solution");
-    options.RoutePrefix = "swagger"; // ✅ lowercase is more standard
+    options.RoutePrefix = "swagger";
 });
-// }
-
 
 app.UseCors("all");
 
@@ -57,8 +47,13 @@ app.UseMiddleware<GlobalException>();
 
 app.UseHttpsRedirection();
 
+
+app.UseDefaultFiles();   
+app.UseStaticFiles();    
+
 app.MapControllers();
 
 
-app.Run();
+app.MapFallbackToFile("index.html");
 
+app.Run();
