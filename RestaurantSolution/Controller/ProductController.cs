@@ -15,13 +15,14 @@ public class ProductController(IProductService productService) : ControllerBase
         Ok(await productService.GetProductAsync(id));
     
     [HttpGet("List")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetListAsync([FromQuery] string? search) =>
-        Ok(await productService.GetProductsAsync(search));
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetListAsync([FromQuery] string? search,
+        [FromQuery] SalesType type) =>
+        Ok(await productService.GetProductsAsync(search, type));
 
     [HttpGet]
     public async Task<ActionResult<Pagination<ProductDto>>> GetAll(
-        [FromQuery] FilterOrderRequest request) =>
-        Ok(await productService.GetProductsAsync(request));
+        [FromQuery] FilterOrderRequest request, [FromQuery] SalesType type) =>
+        Ok(await productService.GetProductsAsync(request, type));
 
     [HttpPost]
     public async Task<ActionResult<ProductDto>> Create(

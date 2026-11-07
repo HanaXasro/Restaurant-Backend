@@ -26,10 +26,9 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
             return MapToDto(order);
         });
 
-    public async Task<Pagination<OrderDto>> GetOrdersAsync(
-        FilterOrderRequest request,
+    public async Task<Pagination<OrderDto>> GetOrdersAsync(FilterOrderRequest request,
         DateOnly? fromDate,
-        DateOnly? toDate) =>
+        DateOnly? toDate, SalesType type) =>
         await unitOfWork.ExecuteAsync(async () =>
         {
             var orderExpression =
@@ -56,7 +55,8 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
                     ? startDate.AddDays(1)
                     : defaultStart.AddDays(1);
 
-            Expression<Func<Order, bool>> query = o =>
+            Expression<Func<Order, bool>> query = o => 
+                o.Type == type &&
                 o.CreateAt >= startDate &&
                 o.CreateAt < endDate &&
                 (
@@ -127,6 +127,7 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
             var order = new Order
             {
                 Id = orderId,
+                Type = request.Type,
                 Items = request.Items.Select(item => new OrderItem
                 {
                     Id = Guid.NewGuid(),

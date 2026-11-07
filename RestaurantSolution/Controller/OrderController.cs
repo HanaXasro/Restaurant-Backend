@@ -16,8 +16,9 @@ public class OrderController(IOrderService orderService) : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<Pagination<OrderDto>>> GetAll(
-        [FromQuery] FilterOrderRequest request,[FromQuery] DateOnly? fromDate,[FromQuery] DateOnly? toDate) =>
-        Ok(await orderService.GetOrdersAsync(request, fromDate, toDate));
+        [FromQuery] FilterOrderRequest request, [FromQuery] DateOnly? fromDate, [FromQuery] DateOnly? toDate,
+        [FromQuery] SalesType type) =>
+        Ok(await orderService.GetOrdersAsync(request, fromDate, toDate, type));
 
     [HttpPost]
     public async Task<ActionResult<OrderDto>> Create(

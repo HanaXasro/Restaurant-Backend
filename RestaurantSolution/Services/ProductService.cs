@@ -33,8 +33,7 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
         });
 
 
-    public async Task<Pagination<ProductDto>> GetProductsAsync(
-        FilterOrderRequest request) =>
+    public async Task<Pagination<ProductDto>> GetProductsAsync(FilterOrderRequest request, SalesType type) =>
         await unitOfWork.ExecuteAsync(async () =>
         {
             var orderExpression =
@@ -45,18 +44,18 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
             var result = orderExpression is not null
                 ? await unitOfWork.Product.FindAsync(
                     query: string.IsNullOrWhiteSpace(request.Search)
-                        ? p => true
-                        : p => EF.Functions.Like(
-                            p.Name, $"%{request.Search}%"),
+                        ? p => p.Type == type
+                        : p => EF.Functions.ILike(
+                            p.Name, $"%{request.Search}%") && p.Type == type,
                     orderExpression,
                     request.IsAscending ?? false,
                     request.Page ?? 1,
                     request.PageSize ?? 10)
                 : await unitOfWork.Product.FindAsync(
                     query: string.IsNullOrWhiteSpace(request.Search)
-                        ? p => true
+                        ? p => p.Type == type
                         : p => EF.Functions.Like(
-                            p.Name, $"%{request.Search}%"),
+                            p.Name, $"%{request.Search}%") && p.Type == type,
                     orderDefault,
                     request.IsAscending ?? false,
                     request.Page ?? 1,
@@ -77,13 +76,13 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
             );
         });
 
-    public async Task<IEnumerable<ProductDto>> GetProductsAsync(string? search) =>
+    public async Task<IEnumerable<ProductDto>> GetProductsAsync(string? search, SalesType type) =>
         await unitOfWork.ExecuteAsync(async () =>
         {
             var products = await unitOfWork.Product.FindListAsync(
                 string.IsNullOrWhiteSpace(search)
-                    ? p => p.IsEnable
-                    : p => EF.Functions.Like(p.Name, $"%{search.Trim()}%") && p.IsEnable
+                    ? p => p.IsEnable && p.Type == type
+                    : p => EF.Functions.Like(p.Name, $"%{search.Trim()}%") && p.IsEnable && p.Type == type
             );
 
             return products.Select(p => new ProductDto
@@ -99,7 +98,7 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
         await unitOfWork.ExecuteAsync(async () =>
         {
             
-            var isUnique = await unitOfWork.Product.FindAsync(e=>e.Name == request.Name);
+            var isUnique = await unitOfWork.Product.FindAsync(e=>e.Name == request.Name && e.Type == request.Type);
             if (isUnique is not null)
                 throw new ConflictException("Product", request.Name);
             
@@ -120,6 +119,7 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
             {
                 Name = request.Name,
                 Price = request.Price,
+                Type = request.Type,
             });
 
             return new ProductDto
@@ -128,7 +128,8 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
                 Name = created.Name,
                 Price = created.Price,
                 CreateAt = created.CreateAt,
-                IsEnable = created.IsEnable
+                IsEnable = created.IsEnable,
+                
             };
         });
 
@@ -141,7 +142,7 @@ public class ProductService(IUnitOfWork unitOfWork) : IProductService
             if (product is null)
                 throw new NotFoundException("Product", id);
             
-            var isUnique = await unitOfWork.Product.FindAsync(e=>e.Name == request.Name && e.Id != id);
+            var isUnique = await unitOfWork.Product.FindAsync(e=>e.Name == request.Name && e.Id != id && e.Type == product.Type);
             if (isUnique is not null)
                 throw new ConflictException("Product", request.Name);
 

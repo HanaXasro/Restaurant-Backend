@@ -71,6 +71,9 @@ namespace RestaurantSolution.Migrations
                         .HasPrecision(19, 3)
                         .HasColumnType("numeric(19,3)");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Orders");
@@ -130,6 +133,9 @@ namespace RestaurantSolution.Migrations
                     b.Property<decimal>("Price")
                         .HasPrecision(19, 3)
                         .HasColumnType("numeric(19,3)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

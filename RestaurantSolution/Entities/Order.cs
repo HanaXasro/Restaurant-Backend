@@ -9,6 +9,8 @@ public class Order : BaseEntity
     [Precision(19,3)]
 
     public decimal TotalAmount { get; set; }
+    
+    public SalesType Type { get; set; }
 
     public ICollection<OrderItem>? Items { get; set; }
 }

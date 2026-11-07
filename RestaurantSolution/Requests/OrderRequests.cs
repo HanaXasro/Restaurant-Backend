@@ -1,7 +1,10 @@
-﻿namespace RestaurantSolution.Requests;
+﻿using RestaurantSolution.Entities;
+
+namespace RestaurantSolution.Requests;
 
 public class OrderCreateRequest
 {
+    public SalesType Type { get; set; }
     public required List<OrderItemCreateRequest> Items { get; set; }
 }
 

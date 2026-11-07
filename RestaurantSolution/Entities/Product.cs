@@ -11,6 +11,8 @@ public class Product : BaseEntity
     [Precision(19,3)]
 
     public decimal Price { get; set; }
+
+    public SalesType Type { get; set; }
     
     public ICollection<OrderItem>? OrderItems { get; set; }
 }

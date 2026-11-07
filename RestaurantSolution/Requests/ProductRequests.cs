@@ -1,9 +1,13 @@
-﻿namespace RestaurantSolution.Requests;
+﻿using RestaurantSolution.Entities;
+
+namespace RestaurantSolution.Requests;
 
 public class ProductCreateRequest
 {
     public required string Name { get; set; } 
     public required  decimal Price { get; set; }
+    public SalesType Type { get; set; }
+
 }
 
 
