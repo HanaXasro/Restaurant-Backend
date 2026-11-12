@@ -26,9 +26,19 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
             return MapToDto(order);
         });
 
-    public async Task<Pagination<OrderDto>> GetOrdersAsync(FilterOrderRequest request,
+    private static readonly TimeSpan BaghdadOffset = TimeSpan.FromHours(3);
+    private static readonly TimeSpan BusinessDayStart = TimeSpan.FromHours(3);
+
+    private static DateTime DayStartUtc(DateOnly date) =>
+        DateTime.SpecifyKind(
+            date.ToDateTime(TimeOnly.MinValue) + BusinessDayStart - BaghdadOffset,
+            DateTimeKind.Utc);
+
+    public async Task<Pagination<OrderDto>> GetOrdersAsync(
+        FilterOrderRequest request,
         DateOnly? fromDate,
-        DateOnly? toDate, SalesType type) =>
+        DateOnly? toDate,
+        SalesType type) =>
         await unitOfWork.ExecuteAsync(async () =>
         {
             var orderExpression =
@@ -38,24 +48,14 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
 
             var search = request.Search?.Trim();
 
-            var now = DateTime.Now;
+            var nowBaghdad = DateTime.UtcNow + BaghdadOffset;
+            var todayBusiness = DateOnly.FromDateTime(nowBaghdad - BusinessDayStart);
 
-            var defaultStart = now.Date.AddHours(3);
+            var startDate = DayStartUtc(fromDate ?? todayBusiness);
+            var endDate = DayStartUtc(
+                (toDate ?? fromDate ?? todayBusiness).AddDays(1));
 
-            if (now.Hour < 3)
-                defaultStart = defaultStart.AddDays(-1);
-
-            var startDate = fromDate.HasValue
-                ? fromDate.Value.ToDateTime(TimeOnly.MinValue).AddHours(3)
-                : defaultStart;
-
-            var endDate = toDate.HasValue
-                ? toDate.Value.ToDateTime(TimeOnly.MinValue).AddDays(1).AddHours(3)
-                : fromDate.HasValue
-                    ? startDate.AddDays(1)
-                    : defaultStart.AddDays(1);
-
-            Expression<Func<Order, bool>> query = o => 
+            Expression<Func<Order, bool>> query = o =>
                 o.Type == type &&
                 o.CreateAt >= startDate &&
                 o.CreateAt < endDate &&
@@ -73,23 +73,20 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
                     isAscending: request.IsAscending ?? false,
                     currentPage: request.Page ?? 1,
                     pageSize: request.PageSize ?? 10,
-                    includes: "Items.Product"
-                )
+                    includes: "Items.Product")
                 : await unitOfWork.Order.FindAsync(
                     query: query,
                     orderBy: orderDefault,
                     isAscending: request.IsAscending ?? false,
                     currentPage: request.Page ?? 1,
                     pageSize: request.PageSize ?? 10,
-                    includes: "Items.Product"
-                );
+                    includes: "Items.Product");
 
             return new Pagination<OrderDto>(
                 result.Items!.Select(MapToDto).ToList(),
                 request.Page ?? 1,
                 request.PageSize ?? 10,
-                result.TotalCount
-            );
+                result.TotalCount);
         });
 
 
